@@ -117,8 +117,8 @@ PG_PORT     = 5432
 
 > **Example (cbhcloud):**
 > ```python
-> GARAGE_KEY_ID     = "GK6759c84613351dac5b8367db"
-> GARAGE_SECRET_KEY = "1edeb1f895689da26a41ba6ced853ea61465e4df1eef31682da5f7d7f6e9fb96"
+> GARAGE_KEY_ID     = "GKxxxxxxxxxxxxxxxxxxxx"      # your Key ID from garage key create
+> GARAGE_SECRET_KEY = "xxxxxxxxxxxxxxxxxxxxxxxx"    # your Secret key from garage key create
 > GARAGE_ENDPOINT   = "ducklake-garage.app.cloud.cbh.kth.se"
 > GARAGE_REGION     = "garage"
 > BUCKET_NAME       = "ducklake"
@@ -126,7 +126,7 @@ PG_PORT     = 5432
 > PG_HOST     = "localhost"
 > PG_DB       = "ducklake"
 > PG_USER     = "duck"
-> PG_PASSWORD = "123456"
+> PG_PASSWORD = "your-postgres-password"
 > PG_PORT     = 5432
 > ```
 
@@ -222,3 +222,39 @@ SELECT * FROM read_csv_auto(
 ```
 
 This downloads the Titanic dataset (891 rows, 12 columns) directly from GitHub and stores it as a `.parquet` file in your Garage bucket.
+
+### Verifying that data is in Garage
+
+After loading data, confirm that parquet files were actually written to Garage by querying DuckLake's internal file registry:
+
+```python
+con = connect()
+print(con.execute("""
+    SELECT path, record_count, file_size_bytes, file_format
+    FROM __ducklake_metadata_my_lake.public.ducklake_data_file
+""").fetchdf())
+```
+
+Example output:
+
+```
+                                            path  record_count  file_size_bytes file_format
+0  ducklake-019dd140-de2c-760a-baf1-9e8e4d1c3728....           891            36840     parquet
+```
+
+- **path** — the file name inside the Garage bucket
+- **record_count** — number of rows stored in that file
+- **file_size_bytes** — size of the parquet file in bytes
+- **file_format** — always `parquet`
+
+If a table does not appear here, its data is still inlined in PostgreSQL (see data inlining section above).
+
+The full flow when loading a dataset:
+
+```
+DuckDB ──read_csv_auto(URL)──► downloads CSV from internet
+      ──writes parquet──► Garage bucket (ducklake/)
+      ──registers path──► PostgreSQL catalog
+```
+
+The next time you run `SELECT * FROM my_lake.main.titanic`, DuckDB asks PostgreSQL for the file path and then fetches the parquet directly from Garage.

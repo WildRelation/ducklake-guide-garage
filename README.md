@@ -178,3 +178,47 @@ No — and it did not need to be. DuckLake has a feature called **data inlining*
 This is why switching from MinIO to Garage was seamless — there was nothing to migrate.
 
 Garage will be used once you insert enough data that DuckLake decides to write `.parquet` files instead of inlining. The threshold is managed automatically by DuckLake.
+
+---
+
+## Forcing data to be written as parquet to Garage
+
+By default, DuckLake decides automatically whether to inline data in PostgreSQL or write `.parquet` files to Garage based on row count. The setting that controls this is:
+
+```python
+con.execute("SET ducklake_default_data_inlining_row_limit = 0;")
+```
+
+Setting it to `0` disables inlining completely — every table will be written as `.parquet` to Garage regardless of size.
+
+You can also set it per `ATTACH` (not persisted, must be set on every connection):
+
+```python
+con.execute(f"""
+ATTACH 'ducklake:postgres:host={PG_HOST} ...'
+AS my_lake (DATA_PATH 's3://{BUCKET_NAME}/', DATA_INLINING_ROW_LIMIT 0);
+""")
+```
+
+Or persist the setting permanently in the catalog:
+
+```python
+con.execute("SELECT ducklake_set_option('data_inlining_row_limit', 0);")
+```
+
+### Loading a dataset from a URL
+
+DuckDB can read CSV files directly from HTTP URLs. Combined with inlining disabled, this writes the data to Garage as parquet:
+
+```python
+con.execute("SET ducklake_default_data_inlining_row_limit = 0;")
+
+con.execute("""
+CREATE OR REPLACE TABLE my_lake.main.titanic AS
+SELECT * FROM read_csv_auto(
+    'https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv'
+);
+""")
+```
+
+This downloads the Titanic dataset (891 rows, 12 columns) directly from GitHub and stores it as a `.parquet` file in your Garage bucket.

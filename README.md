@@ -161,3 +161,20 @@ Not on your side. PostgreSQL and Garage run as Docker containers managed by cbhc
 
 **Does this involve an API?**
 No. DuckDB connects directly to PostgreSQL using the Postgres wire protocol and to Garage using the S3 protocol. There is no HTTP server or REST API involved.
+
+**Is PostgreSQL still needed if Garage replaced MinIO?**
+Yes. Garage replaced MinIO as the **data storage** backend, but PostgreSQL is still the **metadata catalog**. They serve different roles:
+
+```
+PostgreSQL  →  knows what tables exist, where files are, transaction history
+Garage      →  stores the actual .parquet data files
+```
+
+Without PostgreSQL, DuckLake cannot function. Without Garage, it has nowhere to write new data files.
+
+**Was the data in MinIO migrated to Garage?**
+No — and it did not need to be. DuckLake has a feature called **data inlining**: when tables are small, it stores the data directly inside PostgreSQL instead of writing `.parquet` files to object storage. The tables in this lake (`kunder`, `ordrar`, `produkter`) are small enough that DuckLake stored them inline in PostgreSQL, so MinIO and Garage were never actually used for those rows.
+
+This is why switching from MinIO to Garage was seamless — there was nothing to migrate.
+
+Garage will be used once you insert enough data that DuckLake decides to write `.parquet` files instead of inlining. The threshold is managed automatically by DuckLake.

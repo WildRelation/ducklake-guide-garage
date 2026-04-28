@@ -1,26 +1,30 @@
+import os
 import duckdb
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # ── Garage credentials ───────────────────────────────────────────────────────
-GARAGE_KEY_ID     = "<your-key-id>"       # starts with GK...
-GARAGE_SECRET_KEY = "<your-secret-key>"
-GARAGE_ENDPOINT   = "<deployment-name>.app.cloud.cbh.kth.se"
-GARAGE_REGION     = "garage"
-BUCKET_NAME       = "ducklake"
+GARAGE_KEY_ID     = os.environ["GARAGE_KEY_ID"]
+GARAGE_SECRET_KEY = os.environ["GARAGE_SECRET_KEY"]
+GARAGE_ENDPOINT   = os.environ["GARAGE_ENDPOINT"]
+GARAGE_REGION     = os.getenv("GARAGE_REGION", "garage")
+BUCKET_NAME       = os.getenv("BUCKET_NAME", "ducklake")
 
 # ── PostgreSQL credentials (private, reachable via SSH tunnel) ───────────────
-PG_HOST     = "localhost"   # the tunnel forwards localhost:5432 → cbhcloud
-PG_DB       = "<your-postgres-db>"
-PG_USER     = "<your-postgres-user>"
-PG_PASSWORD = "<your-postgres-password>"
-PG_PORT     = 5432
+PG_HOST     = os.getenv("PG_HOST", "localhost")
+PG_DB       = os.environ["PG_DB"]
+PG_USER     = os.environ["PG_USER"]
+PG_PASSWORD = os.environ["PG_PASSWORD"]
+PG_PORT     = int(os.getenv("PG_PORT", "5432"))
 
 
 def connect():
     """Returns a DuckDB connection with the DuckLake catalog attached."""
     con = duckdb.connect()
 
-    con.execute("INSTALL ducklake;")
-    con.execute("INSTALL postgres;")
+    con.execute("INSTALL ducklake IF NOT EXISTS;")
+    con.execute("INSTALL postgres IF NOT EXISTS;")
     con.execute("LOAD ducklake;")
     con.execute("LOAD postgres;")
 

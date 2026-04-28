@@ -4,7 +4,7 @@ from main import connect
 def create(con):
     print("=== CREATE ===")
     con.execute("""
-        CREATE TABLE IF NOT EXISTS my_lake.main.products (
+        CREATE OR REPLACE TABLE my_lake.main.products (
             id     INT,
             name   VARCHAR,
             price  DOUBLE,

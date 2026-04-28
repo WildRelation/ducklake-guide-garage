@@ -97,38 +97,29 @@ pip install -r requirements.txt
 
 ---
 
-## Step 4 — Fill in your credentials in `main.py`
+## Step 4 — Set up your credentials
 
-```python
-# ── Garage credentials ───────────────────────────────────────────────────────
-GARAGE_KEY_ID     = "<your-key-id>"       # starts with GK...
-GARAGE_SECRET_KEY = "<your-secret-key>"
-GARAGE_ENDPOINT   = "<deployment-name>.app.cloud.cbh.kth.se"
-GARAGE_REGION     = "garage"
-BUCKET_NAME       = "ducklake"
+Copy `.env.example` to `.env` and fill in your values:
 
-# ── PostgreSQL credentials ───────────────────────────────────────────────────
-PG_HOST     = "localhost"
-PG_DB       = "<your-postgres-db>"
-PG_USER     = "<your-postgres-user>"
-PG_PASSWORD = "<your-postgres-password>"
-PG_PORT     = 5432
+```bash
+cp .env.example .env
 ```
 
-> **Example (cbhcloud):**
-> ```python
-> GARAGE_KEY_ID     = "GKxxxxxxxxxxxxxxxxxxxx"      # your Key ID from garage key create
-> GARAGE_SECRET_KEY = "xxxxxxxxxxxxxxxxxxxxxxxx"    # your Secret key from garage key create
-> GARAGE_ENDPOINT   = "ducklake-garage.app.cloud.cbh.kth.se"
-> GARAGE_REGION     = "garage"
-> BUCKET_NAME       = "ducklake"
->
-> PG_HOST     = "localhost"
-> PG_DB       = "ducklake"
-> PG_USER     = "duck"
-> PG_PASSWORD = "your-postgres-password"
-> PG_PORT     = 5432
-> ```
+```env
+GARAGE_KEY_ID=GKxxxxxxxxxxxxxxxxxxxx
+GARAGE_SECRET_KEY=your-secret-key
+GARAGE_ENDPOINT=ducklake-garage.app.cloud.cbh.kth.se
+GARAGE_REGION=garage
+BUCKET_NAME=ducklake
+
+PG_HOST=localhost
+PG_DB=ducklake
+PG_USER=ducklake
+PG_PASSWORD=your-postgres-password
+PG_PORT=5432
+```
+
+> `.env` is listed in `.gitignore` and will never be committed.
 
 ---
 

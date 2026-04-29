@@ -23,8 +23,8 @@ def connect():
     """Returns a DuckDB connection with the DuckLake catalog attached."""
     con = duckdb.connect()
 
-    con.execute("INSTALL ducklake IF NOT EXISTS;")
-    con.execute("INSTALL postgres IF NOT EXISTS;")
+    con.execute("INSTALL ducklake;")
+    con.execute("INSTALL postgres;")
     con.execute("LOAD ducklake;")
     con.execute("LOAD postgres;")
 
